@@ -16,12 +16,13 @@ import {
   Linkedin,
   Github,
   Code2,
-  HelpCircle
+  Upload,
+  PlusCircle
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Tracker from './components/Tracker';
 import CoverLetter from './components/CoverLetter';
-import { ProfileModal, DEFAULT_PROFILE } from './components/ProfileModal';
+import { ProfileModal, DEFAULT_DEMO_PROFILE, EMPTY_PROFILE } from './components/ProfileModal';
 import { DeveloperGuideModal } from './components/DeveloperGuideModal';
 
 function App() {
@@ -30,13 +31,13 @@ function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDevGuideOpen, setIsDevGuideOpen] = useState(false);
 
-  // Perfil del usuario persistido en localStorage para que cualquier visitante lo use
+  // Perfil del usuario persistido en localStorage para que cualquier visitante cargue sus datos
   const [profile, setProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('candidate_profile');
-      return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+      return saved ? JSON.parse(saved) : DEFAULT_DEMO_PROFILE;
     } catch (e) {
-      return DEFAULT_PROFILE;
+      return DEFAULT_DEMO_PROFILE;
     }
   });
 
@@ -67,10 +68,11 @@ function App() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsProfileModalOpen(true)}
-            className="p-1.5 bg-dark-800 hover:bg-dark-700 text-blue-400 rounded-lg text-xs font-semibold flex items-center gap-1"
-            title="Mi Perfil"
+            className="p-2 bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600 text-blue-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+            title="Cargar mi CV o LinkedIn"
           >
             <User className="w-4 h-4" />
+            <span>Mi Perfil</span>
           </button>
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -98,19 +100,19 @@ function App() {
             </span>
           </div>
 
-          {/* User Profile Card (Dینámico & Editable) */}
-          <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-4 mb-5 relative overflow-hidden group">
+          {/* User Profile Card (Dinámico & 100% Personalizable) */}
+          <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-4 mb-5 relative overflow-hidden group shadow-lg">
             <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-blue-600/10 rounded-full blur-xl"></div>
             
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs text-blue-400 font-semibold uppercase tracking-wider">
                 <User className="w-3.5 h-3.5" />
-                <span>Perfil</span>
+                <span>Perfil Activo</span>
               </div>
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-blue-400 bg-dark-900 hover:bg-dark-800 px-2 py-1 rounded-lg border border-dark-800/80 transition-colors"
-                title="Editar mi perfil y configuración"
+                className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 bg-blue-600/10 hover:bg-blue-600/20 px-2 py-1 rounded-lg border border-blue-500/20 transition-all"
+                title="Cargar tu propio CV, LinkedIn o editar datos"
               >
                 <Edit3 className="w-3 h-3" />
                 Editar
@@ -121,8 +123,16 @@ function App() {
               {profile.name || "Candidato"}
             </h3>
             <p className="text-xs text-slate-400 mb-2 truncate">
-              {profile.roleTitle || profile.techStack}
+              {profile.roleTitle || profile.techStack || "Software Developer"}
             </p>
+
+            {/* CV Badge si está cargado */}
+            {profile.cvFileName ? (
+              <div className="mb-2 p-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-1.5 text-[10px] text-emerald-400 truncate">
+                <FileText className="w-3 h-3 shrink-0" />
+                <span className="truncate">CV: {profile.cvFileName}</span>
+              </div>
+            ) : null}
 
             {/* Degree status badge */}
             <div className="mb-2.5">
@@ -134,10 +144,19 @@ function App() {
               ) : (
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
                   <Award className="w-3 h-3" />
-                  Experiencia IT (+{profile.experienceYears || '3'} años)
+                  Sin Título (Exp. IT +{profile.experienceYears || '3'} años)
                 </span>
               )}
             </div>
+
+            {/* Botón principal para cargar CV / LinkedIn */}
+            <button
+              onClick={() => setIsProfileModalOpen(true)}
+              className="w-full mb-3 py-1.5 px-2.5 bg-dark-900 hover:bg-dark-800 border border-dark-800 hover:border-blue-500/40 rounded-xl text-[11px] font-medium text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-all shadow-sm"
+            >
+              <Upload className="w-3.5 h-3.5 text-blue-400" />
+              <span>Cargar Mi CV o LinkedIn</span>
+            </button>
             
             <div className="flex flex-col gap-1.5 pt-2.5 border-t border-dark-800/80 text-[11px] text-slate-300">
               <div className="flex items-center gap-1.5 truncate">
@@ -146,8 +165,8 @@ function App() {
               </div>
               
               {/* Enlaces a LinkedIn y GitHub */}
-              <div className="flex items-center gap-2 pt-1">
-                {profile.linkedinUrl && (
+              <div className="flex items-center gap-3 pt-1">
+                {profile.linkedinUrl ? (
                   <a 
                     href={profile.linkedinUrl} 
                     target="_blank" 
@@ -157,8 +176,17 @@ function App() {
                     <Linkedin className="w-3 h-3" />
                     LinkedIn
                   </a>
+                ) : (
+                  <button
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-sky-400"
+                  >
+                    <Linkedin className="w-3 h-3" />
+                    + Agregar LinkedIn
+                  </button>
                 )}
-                {profile.githubUrl && (
+
+                {profile.githubUrl ? (
                   <a 
                     href={profile.githubUrl} 
                     target="_blank" 
@@ -168,7 +196,7 @@ function App() {
                     <Github className="w-3 h-3" />
                     GitHub
                   </a>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
