@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Briefcase, 
   KanbanSquare, 
   FileText, 
-  Globe, 
   User, 
   Zap, 
   MapPin, 
-  Award,
-  ChevronRight,
-  Menu,
-  X,
-  Edit3,
-  GraduationCap,
-  Linkedin,
-  Github,
-  Code2,
-  Upload,
-  PlusCircle
+  Award, 
+  ChevronRight, 
+  Menu, 
+  X, 
+  Edit3, 
+  GraduationCap, 
+  Linkedin, 
+  Github, 
+  Code2, 
+  Upload, 
+  UserPlus, 
+  Sparkles 
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Tracker from './components/Tracker';
 import CoverLetter from './components/CoverLetter';
-import { ProfileModal, DEFAULT_DEMO_PROFILE, EMPTY_PROFILE } from './components/ProfileModal';
+import { ProfileModal, EMPTY_PROFILE } from './components/ProfileModal';
 import { DeveloperGuideModal } from './components/DeveloperGuideModal';
 
 function App() {
@@ -31,13 +31,13 @@ function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDevGuideOpen, setIsDevGuideOpen] = useState(false);
 
-  // Perfil del usuario persistido en localStorage para que cualquier visitante cargue sus datos
+  // Perfil del usuario: Inicia vacío por defecto si el visitante ingresa por primera vez
   const [profile, setProfile] = useState(() => {
     try {
       const saved = localStorage.getItem('candidate_profile');
-      return saved ? JSON.parse(saved) : DEFAULT_DEMO_PROFILE;
+      return saved ? JSON.parse(saved) : EMPTY_PROFILE;
     } catch (e) {
-      return DEFAULT_DEMO_PROFILE;
+      return EMPTY_PROFILE;
     }
   });
 
@@ -45,6 +45,8 @@ function App() {
     setProfile(newProfile);
     localStorage.setItem('candidate_profile', JSON.stringify(newProfile));
   };
+
+  const isProfileConfigured = Boolean(profile.name || profile.linkedinUrl || profile.cvFileName || profile.roleTitle);
 
   const navItems = [
     { id: 'dashboard', label: 'Búsquedas Diarias', icon: Briefcase },
@@ -72,7 +74,7 @@ function App() {
             title="Cargar mi CV o LinkedIn"
           >
             <User className="w-4 h-4" />
-            <span>Mi Perfil</span>
+            <span>{isProfileConfigured ? 'Mi Perfil' : 'Cargar CV'}</span>
           </button>
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -100,106 +102,124 @@ function App() {
             </span>
           </div>
 
-          {/* User Profile Card (Dinámico & 100% Personalizable) */}
-          <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-4 mb-5 relative overflow-hidden group shadow-lg">
-            <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-blue-600/10 rounded-full blur-xl"></div>
-            
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1.5 text-xs text-blue-400 font-semibold uppercase tracking-wider">
-                <User className="w-3.5 h-3.5" />
-                <span>Perfil Activo</span>
+          {/* User Profile Card (Dinámico: Vacío por defecto o Configurado) */}
+          {isProfileConfigured ? (
+            <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-4 mb-5 relative overflow-hidden group shadow-lg">
+              <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-blue-600/10 rounded-full blur-xl"></div>
+              
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 text-xs text-blue-400 font-semibold uppercase tracking-wider">
+                  <User className="w-3.5 h-3.5" />
+                  <span>Perfil Candidato</span>
+                </div>
+                <button
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 bg-blue-600/10 hover:bg-blue-600/20 px-2 py-1 rounded-lg border border-blue-500/20 transition-all"
+                  title="Editar perfil"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  Editar
+                </button>
               </div>
-              <button
-                onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 bg-blue-600/10 hover:bg-blue-600/20 px-2 py-1 rounded-lg border border-blue-500/20 transition-all"
-                title="Cargar tu propio CV, LinkedIn o editar datos"
-              >
-                <Edit3 className="w-3 h-3" />
-                Editar
-              </button>
-            </div>
 
-            <h3 className="font-display font-bold text-sm text-slate-100 mb-0.5 leading-tight truncate">
-              {profile.name || "Candidato"}
-            </h3>
-            <p className="text-xs text-slate-400 mb-2 truncate">
-              {profile.roleTitle || profile.techStack || "Software Developer"}
-            </p>
+              <h3 className="font-display font-bold text-sm text-slate-100 mb-0.5 leading-tight truncate">
+                {profile.name || "Candidato"}
+              </h3>
+              <p className="text-xs text-slate-400 mb-2 truncate">
+                {profile.roleTitle || profile.techStack || "Software Developer"}
+              </p>
 
-            {/* CV Badge si está cargado */}
-            {profile.cvFileName ? (
-              <div className="mb-2 p-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-1.5 text-[10px] text-emerald-400 truncate">
-                <FileText className="w-3 h-3 shrink-0" />
-                <span className="truncate">CV: {profile.cvFileName}</span>
-              </div>
-            ) : null}
-
-            {/* Degree status badge */}
-            <div className="mb-2.5">
-              {profile.hasDegree ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                  <GraduationCap className="w-3 h-3" />
-                  Con Título Universitario
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                  <Award className="w-3 h-3" />
-                  Sin Título (Exp. IT +{profile.experienceYears || '3'} años)
-                </span>
+              {/* CV Badge si está cargado */}
+              {profile.cvFileName && (
+                <div className="mb-2 p-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-1.5 text-[10px] text-emerald-400 truncate">
+                  <FileText className="w-3 h-3 shrink-0" />
+                  <span className="truncate">CV: {profile.cvFileName}</span>
+                </div>
               )}
-            </div>
 
-            {/* Botón principal para cargar CV / LinkedIn */}
-            <button
-              onClick={() => setIsProfileModalOpen(true)}
-              className="w-full mb-3 py-1.5 px-2.5 bg-dark-900 hover:bg-dark-800 border border-dark-800 hover:border-blue-500/40 rounded-xl text-[11px] font-medium text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-all shadow-sm"
-            >
-              <Upload className="w-3.5 h-3.5 text-blue-400" />
-              <span>Cargar Mi CV o LinkedIn</span>
-            </button>
-            
-            <div className="flex flex-col gap-1.5 pt-2.5 border-t border-dark-800/80 text-[11px] text-slate-300">
-              <div className="flex items-center gap-1.5 truncate">
-                <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
-                <span className="truncate">Meta: {profile.preferredDestinations || "UE"}</span>
+              {/* Degree status badge */}
+              <div className="mb-2.5">
+                {profile.hasDegree ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                    <GraduationCap className="w-3 h-3" />
+                    Con Título Universitario
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                    <Award className="w-3 h-3" />
+                    Sin Título (Exp. IT +{profile.experienceYears || '3'} años)
+                  </span>
+                )}
               </div>
               
-              {/* Enlaces a LinkedIn y GitHub */}
-              <div className="flex items-center gap-3 pt-1">
-                {profile.linkedinUrl ? (
-                  <a 
-                    href={profile.linkedinUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 transition-colors"
-                  >
-                    <Linkedin className="w-3 h-3" />
-                    LinkedIn
-                  </a>
-                ) : (
-                  <button
-                    onClick={() => setIsProfileModalOpen(true)}
-                    className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-sky-400"
-                  >
-                    <Linkedin className="w-3 h-3" />
-                    + Agregar LinkedIn
-                  </button>
+              <div className="flex flex-col gap-1.5 pt-2.5 border-t border-dark-800/80 text-[11px] text-slate-300">
+                {profile.preferredDestinations && (
+                  <div className="flex items-center gap-1.5 truncate">
+                    <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span className="truncate">Meta: {profile.preferredDestinations}</span>
+                  </div>
                 )}
+                
+                {/* Enlaces a LinkedIn y GitHub */}
+                <div className="flex items-center gap-3 pt-1">
+                  {profile.linkedinUrl ? (
+                    <a 
+                      href={profile.linkedinUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 transition-colors"
+                    >
+                      <Linkedin className="w-3 h-3" />
+                      LinkedIn
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => setIsProfileModalOpen(true)}
+                      className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-sky-400"
+                    >
+                      <Linkedin className="w-3 h-3" />
+                      + Agregar LinkedIn
+                    </button>
+                  )}
 
-                {profile.githubUrl ? (
-                  <a 
-                    href={profile.githubUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <Github className="w-3 h-3" />
-                    GitHub
-                  </a>
-                ) : null}
+                  {profile.githubUrl && (
+                    <a 
+                      href={profile.githubUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors"
+                    >
+                      <Github className="w-3 h-3" />
+                      GitHub
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            // ESTADO VACÍO / INVITACIÓN A CARGAR PERFIL
+            <div className="bg-dark-950/80 border border-dashed border-blue-500/30 rounded-2xl p-4 mb-5 text-center space-y-3 relative overflow-hidden group">
+              <div className="w-10 h-10 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-display font-bold text-xs text-slate-100">
+                  Tu Perfil (Sin configurar)
+                </h4>
+                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                  Carga tu CV, pega tu LinkedIn o ingresa tus datos para personalizar tus postulaciones.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-all"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Cargar Mi CV o LinkedIn</span>
+              </button>
+            </div>
+          )}
 
           {/* Menú Items */}
           <nav className="space-y-1.5">

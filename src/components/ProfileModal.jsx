@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, 
   User, 
@@ -34,27 +34,17 @@ export const EMPTY_PROFILE = {
   cvUploadedAt: ""
 };
 
-export const DEFAULT_DEMO_PROFILE = {
-  name: "Candidato Ejemplo",
-  roleTitle: "Full Stack Engineer (.NET & React)",
-  techStack: "C#, .NET Core, SQL Server, React, TypeScript",
-  experienceYears: "3",
-  hasDegree: false,
-  originCountry: "Argentina",
-  preferredDestinations: "España, Alemania, Países Bajos",
-  linkedinUrl: "https://linkedin.com/in/tu-perfil",
-  githubUrl: "https://github.com/tu-usuario",
-  cvFileName: "",
-  cvFileSize: "",
-  cvUploadedAt: ""
-};
-
 export function ProfileModal({ isOpen, onClose, profile, onSave }) {
   const [activeMethod, setActiveMethod] = useState('all'); // 'all', 'cv', 'linkedin', 'manual'
-  const [formData, setFormData] = useState(profile || DEFAULT_DEMO_PROFILE);
+  const [formData, setFormData] = useState(profile || EMPTY_PROFILE);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Sincronizar formData si el prop profile cambia
+  useEffect(() => {
+    setFormData(profile || EMPTY_PROFILE);
+  }, [profile, isOpen]);
 
   if (!isOpen) return null;
 
@@ -77,7 +67,6 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
       cvFileName: file.name,
       cvFileSize: fileSizeFormatted,
       cvUploadedAt: new Date().toLocaleDateString(),
-      // Si el nombre aún está vacío, deducir algo amistoso del archivo
       name: prev.name || file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ")
     }));
   };
@@ -100,9 +89,7 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
   };
 
   const handleResetToEmpty = () => {
-    if (window.confirm("¿Deseas limpiar todos los campos para cargar tu perfil desde cero?")) {
-      setFormData(EMPTY_PROFILE);
-    }
+    setFormData(EMPTY_PROFILE);
   };
 
   const handleSubmit = (e) => {
@@ -112,7 +99,7 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
     setTimeout(() => {
       setSavedSuccess(false);
       onClose();
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -142,7 +129,7 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
           </button>
         </div>
 
-        {/* Barra de opciones rápidas: CV / LinkedIn / Manual */}
+        {/* Barra de opciones de carga */}
         <div className="grid grid-cols-3 gap-2 p-1 bg-dark-950/80 border border-dark-800 rounded-xl">
           <button
             type="button"
@@ -333,10 +320,9 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
                   </label>
                   <input
                     type="text"
-                    required
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    placeholder="Ej. Martín González"
+                    placeholder="Ej. Juan Pérez"
                     className="w-full bg-dark-950 border border-dark-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500/50"
                   />
                 </div>
@@ -347,7 +333,6 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
                   </label>
                   <input
                     type="text"
-                    required
                     value={formData.roleTitle}
                     onChange={(e) => handleChange('roleTitle', e.target.value)}
                     placeholder="Ej. Full Stack Engineer / Frontend / Backend"
@@ -367,7 +352,7 @@ export function ProfileModal({ isOpen, onClose, profile, onSave }) {
                     type="text"
                     value={formData.techStack}
                     onChange={(e) => handleChange('techStack', e.target.value)}
-                    placeholder="Ej. React, Node.js, Python, TypeScript, .NET"
+                    placeholder="Ej. React, Node.js, Python, TypeScript, .NET, C#"
                     className="w-full bg-dark-950 border border-dark-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500/50"
                   />
                 </div>
